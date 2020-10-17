@@ -4,6 +4,7 @@ from django.db import models
 class Base(models.Model):
     class Meta:
         abstract = True
+        ordering = ["-last_modified"]
 
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

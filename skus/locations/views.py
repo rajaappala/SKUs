@@ -1,5 +1,5 @@
 from rest_framework import viewsets, permissions, status, generics, mixins
-from rest_framework.decorators import action
+from django.db.models import F
 from rest_framework.response import Response
 
 from locations.models import *
@@ -38,6 +38,22 @@ class DepartmentViewSet(BaseViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        locations = Location.objects.values(value=F('id'), text=F('name')).order_by('name')
+        response = {
+            "locations": locations
+        }
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response['departments'] = serializer.data
+            return self.get_paginated_response(response)
+
+        serializer = self.get_serializer(queryset, many=True)
+        response['departments'] = serializer.data
+        return Response(response)
+
 
 class CategoryViewSet(BaseViewSet):
     """
@@ -46,6 +62,22 @@ class CategoryViewSet(BaseViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        departments = Department.objects.values(value=F('id'), text=F('name')).order_by('name')
+        response = {
+            "departments": departments
+        }
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response['categories'] = serializer.data
+            return self.get_paginated_response(response)
+
+        serializer = self.get_serializer(queryset, many=True)
+        response['categories'] = serializer.data
+        return Response(response)
+
 
 class SubCategoryViewSet(BaseViewSet):
     """
@@ -53,6 +85,22 @@ class SubCategoryViewSet(BaseViewSet):
     """
     queryset = SubCategory.objects.all()
     serializer_class = SubCategorySerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        categories = Category.objects.values(value=F('id'), text=F('name')).order_by('name')
+        response = {
+            "categories": categories
+        }
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response['subcategories'] = serializer.data
+            return self.get_paginated_response(response)
+
+        serializer = self.get_serializer(queryset, many=True)
+        response['subcategories'] = serializer.data
+        return Response(response)
 
 
 class SKU(mixins.RetrieveModelMixin, generics.GenericAPIView):

@@ -7,11 +7,12 @@ class LocationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Location
-        fields = ['id', 'sku_code', 'sku_name', 'name', 'user', 'created_at']
+        fields = ['id', 'sku_code', 'sku_name', 'name', 'user', 'last_modified']
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
+    location = serializers.CharField(source='location.name')
 
     class Meta:
         model = models.Department
@@ -20,6 +21,7 @@ class DepartmentSerializer(serializers.ModelSerializer):
 
 class CategorySerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
+    department = serializers.CharField(source='department.name')
 
     class Meta:
         model = models.Category
@@ -28,6 +30,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class SubCategorySerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
+    category = serializers.CharField(source='category.name')
 
     class Meta:
         model = models.SubCategory
