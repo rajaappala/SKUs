@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,12 +22,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '#p629ybj)=_78qql7=_=q7ka&3b_js##kkf2#pi%*tic1bkadg'
+SECRET_KEY = os.environ.get("SECRET_KEY")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = int(os.environ.get("DEBUG", default=0))
 
-ALLOWED_HOSTS = []
+
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -83,12 +86,12 @@ WSGI_APPLICATION = 'skus.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sku',
-        'USER': 'root',
-        'PASSWORD': 'secret',
-        'HOST': '127.0.0.1',
-        'PORT': 3306,
+        'ENGINE': os.environ.get("SQL_ENGINE", "'django.db.backends.mysql'"),
+        'NAME': os.environ.get("SQL_DATABASE", "sku"),
+        'USER': os.environ.get("SQL_USER", "admin"),
+        'PASSWORD': os.environ.get("SQL_PASSWORD", "admin"),
+        'HOST': os.environ.get("SQL_HOST", "localhost"),
+        'PORT': os.environ.get("SQL_PORT", "3306"),
     }
 }
 

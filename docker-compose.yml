@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+  ui:
+    build: ./sku_ui
+    links:
+      - api
+    ports:
+      - 3000:8080
+    command: npm run serve
+    network_mode: bridge
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  api:
+    build: ./skus
+    links:
+      - mariadb
+    ports:
+      - 8000:8000
+    env_file:
+      - ./skus/.env.dev
+    command: python manage.py runserver 0.0.0.0:8000
+    network_mode: bridge
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  mariadb:
+    image: mariadb:latest
+    restart: "no"
+    volumes:
+      - /var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=admin
+      - MYSQL_DATABASE=sku
+    network_mode: bridge

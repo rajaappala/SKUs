@@ -9,6 +9,9 @@
       >
     </div>
     <b-table striped hover :items="subcategories" :fields="fields">
+      <template v-slot:cell(category)="row">
+          <span>{{row.item.category}}</span>
+      </template>
       <template v-slot:cell(actions)="row">
         <b-button
           @click="editSubcategory(row.item, row.index, $event.target)"
@@ -17,12 +20,13 @@
         >
           Edit
         </b-button>
-        <b-button size="sm" class="mr-1" @click="row.toggleDetails">
+        <b-button variant="info" size="sm" class="mr-1" @click="row.toggleDetails">
           {{ row.detailsShowing ? "Hide" : "Show" }} Details
         </b-button>
         <b-button
           @click="deleteSubcategory(row.item, row.index, $event.target)"
           size="sm"
+          variant="danger"
         >
           Delete
         </b-button>
@@ -80,6 +84,7 @@
 
 <script>
 import { mapGetters, mapActions, mapMutations } from "vuex";
+import _ from "lodash";
 export default {
   name: "SubcategoryComponent",
   data() {
@@ -162,7 +167,9 @@ export default {
     editSubcategory(item, index, event) {
       this.newSubcategory.id = item.id;
       this.newSubcategory.name = item.name;
-      this.newSubcategory.category = item.category;
+      this.newSubcategory.category = _.find(this.getCatForSubcat, (val) => {
+        if (val.text == item.category) return val;
+      }).value;
       this.subcatModal.titel = `Edit ${item.name}`;
       this.set_subcategory(this.newSubcategory);
       this.$bvModal.show("subcategory-modal");

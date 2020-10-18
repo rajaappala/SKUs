@@ -11,26 +11,35 @@ class Base(models.Model):
     last_modified = models.DateTimeField(auto_now=True)
     user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
 
-    def __str__(self):
-        return self.name
-
 
 class Location(Base):
     name = models.CharField(max_length=200, unique=True)
     sku_code = models.SlugField(max_length=64, unique=True)
     sku_name = models.CharField(max_length=200)
 
+    def __str__(self):
+        return self.name
+
 
 class Department(Base):
     name = models.CharField(max_length=200)
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
 
 
 class Category(Base):
     name = models.CharField(max_length=200,)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.name
+
 
 class SubCategory(Base):
     name = models.CharField(max_length=200,)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name

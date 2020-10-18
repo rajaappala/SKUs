@@ -4,13 +4,20 @@
       <b-row>
         <b-col cols="2">
           <b-sidebar
-            id="sidebar-no-header"
+            id="sidebar"
             bg-variant="dark"
             text-variant="light"
             sidebar-class="border-right border-danger"
             title="SKU"
-            aria-labelledby="sidebar-no-header-title"
+            header-class="ml-5"
+            aria-labelledby="sidebar-title"
             width="250px"
+            aria-controls="sidebar"
+            aria-expanded="true"
+            :no-close-on-route-change="true"
+            :no-close-on-esc="true"
+            :no-close-on-backdrop="true"
+            :no-header-close="true"
             visible
             shadow
           >
@@ -42,7 +49,7 @@
           </b-sidebar>
         </b-col>
         <b-col cols="10">
-          <div class="main-content md-10 mt-5">
+          <div class="main-content md-10 mt-2">
             <div>
               <b-breadcrumb :items="breadcrumbItems"></b-breadcrumb>
               <!-- content here -->

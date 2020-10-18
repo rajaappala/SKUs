@@ -9,20 +9,30 @@
       >
     </div>
     <b-table striped hover :items="departments" :fields="fields">
+      <template v-slot:cell(location)="row">
+        <span>{{ row.item.location }}</span>
+      </template>
       <template v-slot:cell(actions)="row">
         <b-button
           @click="editDept(row.item, row.index, $event.target)"
           class="mr-1"
           size="sm"
+          variant="secondary"
         >
           Edit
         </b-button>
-        <b-button size="sm" class="mr-1" @click="row.toggleDetails">
+        <b-button
+          variant="info"
+          size="sm"
+          class="mr-1"
+          @click="row.toggleDetails"
+        >
           {{ row.detailsShowing ? "Hide" : "Show" }} Details
         </b-button>
         <b-button
           @click="deleteDept(row.item, row.index, $event.target)"
           size="sm"
+          variant="danger"
         >
           Delete
         </b-button>
@@ -80,6 +90,8 @@
 
 <script>
 import { mapGetters, mapActions, mapMutations } from "vuex";
+import _ from "lodash";
+
 export default {
   name: "DepartmentComponent",
   data() {
@@ -162,7 +174,10 @@ export default {
     editDept(item, index, event) {
       this.newDept.id = item.id;
       this.newDept.name = item.name;
-      this.newDept.location = item.location;
+      debugger;
+      this.newDept.location = _.find(this.getLocationsFordepartment, (val) => {
+        if (val.text == item.location) return val;
+      }).value;
       this.deptModal.titel = `Edit ${item.name}`;
       this.set_department(this.newDept);
       this.$bvModal.show("department-modal");

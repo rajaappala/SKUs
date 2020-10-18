@@ -12,15 +12,17 @@
           @click="editLocation(row.item, row.index, $event.target)"
           class="mr-1"
           size="sm"
+          variant="secondary"
         >
           Edit
         </b-button>
-        <b-button size="sm" class="mr-1" @click="row.toggleDetails">
+        <b-button variant="info" size="sm" class="mr-1" @click="row.toggleDetails">
           {{ row.detailsShowing ? "Hide" : "Show" }} Details
         </b-button>
         <b-button
           @click="deleteLocation(row.item, row.index, $event.target)"
           size="sm"
+          variant="danger"
         >
           Delete
         </b-button>

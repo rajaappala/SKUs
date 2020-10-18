@@ -9,20 +9,30 @@
       >
     </div>
     <b-table striped hover :items="categories" :fields="fields">
+      <template v-slot:cell(department)="row">
+        <span>{{ row.item.department }}</span>
+      </template>
       <template v-slot:cell(actions)="row">
         <b-button
           @click="editCategory(row.item, row.index, $event.target)"
           class="mr-1"
           size="sm"
+          variant="secondary"
         >
           Edit
         </b-button>
-        <b-button size="sm" class="mr-1" @click="row.toggleDetails">
+        <b-button
+          variant="info"
+          size="sm"
+          class="mr-1"
+          @click="row.toggleDetails"
+        >
           {{ row.detailsShowing ? "Hide" : "Show" }} Details
         </b-button>
         <b-button
           @click="deleteCategory(row.item, row.index, $event.target)"
           size="sm"
+          variant="danger"
         >
           Delete
         </b-button>
@@ -80,6 +90,7 @@
 
 <script>
 import { mapGetters, mapActions, mapMutations } from "vuex";
+import _ from "lodash";
 export default {
   name: "CategoryComponent",
   data() {
@@ -162,7 +173,9 @@ export default {
     editCategory(item, index, event) {
       this.newCategory.id = item.id;
       this.newCategory.name = item.name;
-      this.newCategory.department = item.department;
+      this.newCategory.department = _.find(this.getDeptsForCategory, (val) => {
+        if (val.text == item.department) return val;
+      }).value;
       this.catModal.titel = `Edit ${item.name}`;
       this.set_category(this.newCategory);
       this.$bvModal.show("category-modal");

@@ -12,29 +12,29 @@ class LocationSerializer(serializers.ModelSerializer):
 
 class DepartmentSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
-    location = serializers.CharField(source='location.name')
+    location = serializers.StringRelatedField()
 
     class Meta:
         model = models.Department
-        fields = ['id', 'name', 'location', 'user', 'created_at']
+        fields = ['id', 'name', 'location', 'user', 'last_modified']
 
 
 class CategorySerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
-    department = serializers.CharField(source='department.name')
+    department = serializers.StringRelatedField()
 
     class Meta:
         model = models.Category
-        fields = ['id', 'name', 'department', 'user', 'created_at']
+        fields = ['id', 'name', 'department', 'user', 'last_modified']
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
-    category = serializers.CharField(source='category.name')
+    category = serializers.StringRelatedField()
 
     class Meta:
         model = models.SubCategory
-        fields = ['id', 'name', 'category', 'user', 'created_at']
+        fields = ['id', 'name', 'category', 'user', 'last_modified']
 
 
 class InfoGraphSerilizer(serializers.ModelSerializer):
