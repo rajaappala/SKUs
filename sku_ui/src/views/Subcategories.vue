@@ -10,7 +10,7 @@
     </div>
     <b-table striped hover :items="subcategories" :fields="fields">
       <template v-slot:cell(category)="row">
-          <span>{{row.item.category}}</span>
+        <span>{{ getName(row.item.category) }}</span>
       </template>
       <template v-slot:cell(actions)="row">
         <b-button
@@ -20,7 +20,12 @@
         >
           Edit
         </b-button>
-        <b-button variant="info" size="sm" class="mr-1" @click="row.toggleDetails">
+        <b-button
+          variant="info"
+          size="sm"
+          class="mr-1"
+          @click="row.toggleDetails"
+        >
           {{ row.detailsShowing ? "Hide" : "Show" }} Details
         </b-button>
         <b-button
@@ -42,6 +47,17 @@
         </b-card>
       </template>
     </b-table>
+    <b-pagination
+      v-model="currentPage"
+      :total-rows="totalRows"
+      :per-page="perPage"
+      first-text="First"
+      prev-text="Prev"
+      next-text="Next"
+      last-text="Last"
+      align="right"
+      @input="paginate(currentPage)"
+    ></b-pagination>
     <b-modal
       id="subcategory-modal"
       ref="modal"
@@ -101,6 +117,9 @@ export default {
         title: "Add Subcategory",
       },
       fields: ["id", "name", "category", "user", "last_modified", "actions"],
+      currentPage: 1,
+      totalRows: 10,
+      perPage: null
     };
   },
   computed: {
@@ -111,7 +130,10 @@ export default {
     }),
   },
   created() {
-    this.get_subcategories();
+    this.get_subcategories().then((resp) => {
+      this.totalRows = resp.data.count;
+      this.perPage = resp.data.results.subcategories.length;
+    });
     this.set_breadcrumb("Subcategories");
   },
   methods: {
@@ -164,13 +186,16 @@ export default {
         });
       }
     },
+    getName(id) {
+      return _.find(this.getCatForSubcat, (val) => {
+        if (val.value == id) return val;
+      }).text;
+    },
     editSubcategory(item, index, event) {
       this.newSubcategory.id = item.id;
       this.newSubcategory.name = item.name;
-      this.newSubcategory.category = _.find(this.getCatForSubcat, (val) => {
-        if (val.text == item.category) return val;
-      }).value;
-      this.subcatModal.titel = `Edit ${item.name}`;
+      this.newSubcategory.category = item.category;
+      this.subcatModal.title = `Edit ${item.name}`;
       this.set_subcategory(this.newSubcategory);
       this.$bvModal.show("subcategory-modal");
     },
@@ -188,16 +213,22 @@ export default {
           centered: true,
         })
         .then((value) => {
-          this.delete_subcategory(item.id).then(() => {
-            this.alert.message = "Subategory deleted successfully";
-            this.alert.variant = "success";
-            this.alert.show = true;
-          });
+          if (value) {
+            this.delete_subcategory(item.id).then(() => {
+              this.alert.message = "Subategory deleted successfully";
+              this.alert.variant = "success";
+              this.alert.show = true;
+            });
+          }
         })
         .catch((err) => {
           // An error occurred
         });
     },
+    paginate(currentPage) {
+      let offset = (currentPage-1) * this.perPage;
+      this.get_subcategories(offset);
+    },    
   },
 };
 </script>

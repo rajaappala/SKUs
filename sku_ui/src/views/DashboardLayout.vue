@@ -33,6 +33,7 @@
                     <b-nav-item to="/categories">Categories</b-nav-item>
                     <b-nav-item to="/subcategories">Subcategories</b-nav-item>
                     <b-nav-item to="/skus">SKUs</b-nav-item>
+                    <b-nav-item to="/infograph">InfoGraph</b-nav-item>
                   </b-nav>
                 </div>
               </nav>

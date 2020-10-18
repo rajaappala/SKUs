@@ -8,6 +8,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class BaseViewSet(viewsets.ModelViewSet):
     """
     This is a base viewset to provides `CRUD` actions
@@ -108,6 +109,7 @@ class SKU(mixins.RetrieveModelMixin, generics.GenericAPIView):
     This is to get all the SKUs with location, dept, category and subcategory
     """
     queryset = Location.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         location = request.GET.get('location', None)
@@ -129,13 +131,38 @@ class SKU(mixins.RetrieveModelMixin, generics.GenericAPIView):
             return Response('Please provide all arguments', status=status.HTTP_400_BAD_REQUEST)
 
 
-class InfoGraph(mixins.RetrieveModelMixin, generics.GenericAPIView):
+class InfoGraphViewset(mixins.RetrieveModelMixin,
+                       mixins.ListModelMixin,
+                       viewsets.GenericViewSet):
     """
     This is to get all the SKUs with location, dept, category and subcategory
     """
-    queryset = SubCategory.objects.all()
-    serializer_class = InfoGraphSerilizer
+    queryset = Location.objects.all()
+    serializer_class = LocationGraphSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
-        graph_data = [self.get_serializer(item).data for item in self.get_queryset()]
-        return Response(graph_data)
+    def list(self, request, *args, **kwargs):
+        locations = self.queryset.values(value=F('id'), text=F('name')).order_by('name')
+        return Response(locations)
+
+    def retrieve(self, request, *args, **kwargs):
+        location = self.get_object()
+        logger.info(f"Fetching the relation tree of the location: {location.name}")
+        location_data = self.get_serializer(location).data
+        departments = Department.objects.filter(id__in=location_data['department_set'])
+        location_data['children'] = []
+        del location_data['department_set']
+        for department in departments:
+            dept_data = DepartmentGraphSerializer(department).data
+            categories = Category.objects.filter(id__in=dept_data['category_set'])
+            dept_data['children'] = []
+            del dept_data['category_set']
+            for category in categories:
+                cat_data = CategoryGraphSerializer(category).data
+                subcat_list = list(SubCategory.objects.filter(id__in=cat_data['subcategory_set']).values('name'))
+                cat_data['children'] = subcat_list
+                del cat_data['subcategory_set']
+                dept_data['children'].append(cat_data)
+            location_data['children'].append(dept_data)
+
+        return Response(location_data)

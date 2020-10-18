@@ -10,7 +10,7 @@
     </div>
     <b-table striped hover :items="categories" :fields="fields">
       <template v-slot:cell(department)="row">
-        <span>{{ row.item.department }}</span>
+        <span>{{ getName(row.item.department) }}</span>
       </template>
       <template v-slot:cell(actions)="row">
         <b-button
@@ -48,6 +48,17 @@
         </b-card>
       </template>
     </b-table>
+    <b-pagination
+      v-model="currentPage"
+      :total-rows="totalRows"
+      :per-page="perPage"
+      first-text="First"
+      prev-text="Prev"
+      next-text="Next"
+      last-text="Last"
+      align="right"
+      @input="paginate(currentPage)"
+    ></b-pagination>
     <b-modal
       id="category-modal"
       ref="modal"
@@ -107,6 +118,9 @@ export default {
         title: "Add Category",
       },
       fields: ["id", "name", "department", "user", "last_modified", "actions"],
+      currentPage: 1,
+      totalRows: 10,
+      perPage: null
     };
   },
   computed: {
@@ -117,7 +131,10 @@ export default {
     }),
   },
   created() {
-    this.get_categories();
+    this.get_categories().then((resp) => {
+      this.totalRows = resp.data.count;
+      this.perPage = resp.data.results.categories.length;
+    });
     this.set_breadcrumb("Categories");
   },
   methods: {
@@ -170,13 +187,16 @@ export default {
         });
       }
     },
+    getName(id) {
+      return _.find(this.getDeptsForCategory, (val) => {
+        if (val.value == id) return val;
+      }).text;
+    },
     editCategory(item, index, event) {
       this.newCategory.id = item.id;
       this.newCategory.name = item.name;
-      this.newCategory.department = _.find(this.getDeptsForCategory, (val) => {
-        if (val.text == item.department) return val;
-      }).value;
-      this.catModal.titel = `Edit ${item.name}`;
+      this.newCategory.department = item.department;
+      this.catModal.title = `Edit ${item.name}`;
       this.set_category(this.newCategory);
       this.$bvModal.show("category-modal");
     },
@@ -194,16 +214,22 @@ export default {
           centered: true,
         })
         .then((value) => {
-          this.delete_category(item.id).then(() => {
-            this.alert.message = "Category deleted successfully";
-            this.alert.variant = "success";
-            this.alert.show = true;
-          });
+          if (value) {
+            this.delete_category(item.id).then(() => {
+              this.alert.message = "Category deleted successfully";
+              this.alert.variant = "success";
+              this.alert.show = true;
+            });
+          }
         })
         .catch((err) => {
           // An error occurred
         });
     },
+    paginate(currentPage) {
+      let offset = (currentPage-1) * this.perPage;
+      this.get_categories(offset);
+    }, 
   },
 };
 </script>

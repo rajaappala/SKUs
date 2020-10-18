@@ -7,9 +7,9 @@ router.register(r'location', views.LocationViewSet, basename='location')
 router.register(r'department', views.DepartmentViewSet, basename='department')
 router.register(r'category', views.CategoryViewSet, basename='category')
 router.register(r'subcategory', views.SubCategoryViewSet, basename='subcategory')
+router.register(r'infograph', views.InfoGraphViewset, basename='infograph')
 
 urlpatterns = [
     path('', include(router.urls)),
     path('sku', views.SKU.as_view(), name='sku'),
-    path('infograph', views.InfoGraph.as_view(), name='infograph')
 ]

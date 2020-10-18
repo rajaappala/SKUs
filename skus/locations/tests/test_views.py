@@ -1,6 +1,6 @@
 import pytest
 import json
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 
 from locations import factories
 from locations import models
@@ -15,6 +15,7 @@ def setup_data(admin_user):
         name="cat", department=department, user=admin_user)
     subcat = factories.SubcategoryFactory(
         name="subcat", category=category, user=admin_user)
+
 
 def test_locations(sku_client, admin_user):
     location = factories.LocationFactory(
@@ -38,7 +39,7 @@ def test_locations(sku_client, admin_user):
         follow=True
     )
     assert response.status_code == 201
-    location = models.Location.objects.last()
+    location = models.Location.objects.first()
     assert location.name == 'location2'
 
     response = sku_client.get(reverse('locations:location-detail', args=[location.pk]))
@@ -106,6 +107,7 @@ def test_categories(sku_client, admin_user):
     assert response.status_code == 204
     assert models.Category.objects.count() == 0
 
+
 def test_subcategories(sku_client, admin_user):
     location = factories.LocationFactory(user=admin_user)
     department = factories.DepartmentFactory(location=location, user=admin_user)
@@ -148,10 +150,26 @@ def test_sku(sku_client, admin_user):
 
 def test_infograph(sku_client, admin_user):
     setup_data(admin_user)
-    res = sku_client.get(reverse('locations:infograph'))
+    res = sku_client.get(reverse('locations:infograph-list'))
     assert res.status_code == 200
     data = json.loads(res.content)
-    assert data[0]['location'] == 'location'
-    assert data[0]['department'] == 'dept'
-    assert data[0]['category'] == 'cat'
-    assert data[0]['subcategory'] == 'subcat'
+    assert data[0]['text'] == 'location'
+
+    res = sku_client.get(reverse('locations:infograph-detail', args=[data[0]['value']]))
+    assert res.status_code == 200
+    data = json.loads(res.content)
+    print(data)
+    assert data['name'] == 'location'
+    assert data['children'] == [
+        {
+            'name': 'dept',
+            'children': [
+                {
+                    'name': 'cat',
+                    'children': [
+                        {'name': 'subcat'}
+                    ]
+                }
+            ]
+        }
+    ]

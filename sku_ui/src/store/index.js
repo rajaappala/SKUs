@@ -20,7 +20,8 @@ export default new Vuex.Store({
     subcategory: {},
     catForSubcat: [],
     skus: [],
-    breadcrumbItems: []
+    infoGraphData: {},
+    breadcrumbItems: [],
   },
   mutations: {
     // Auth Mutations 
@@ -98,6 +99,10 @@ export default new Vuex.Store({
 
     set_breadcrumb(state, breadcrumb) {
       state.breadcrumbItems = [breadcrumb]
+    },
+
+    set_infograph(state, infograph){
+      state.infoGraphData = infograph
     }
   },
   actions: {
@@ -138,9 +143,9 @@ export default new Vuex.Store({
 
     // Location Actions
 
-    get_locations({ commit }) {
+    get_locations({ commit }, pageOffset=0) {
       return new Promise((resolve, reject) => {
-        axios({ url: '/location/', method: 'GET' })
+        axios({ url: `/location/?offset=${pageOffset}`, method: 'GET' })
           .then(resp => {
             commit('set_locations', resp.data.results)
             resolve(resp)
@@ -189,9 +194,9 @@ export default new Vuex.Store({
 
     // Department Actions
 
-    get_departments({ commit }) {
+    get_departments({ commit }, pageOffset=0) {
       return new Promise((resolve, reject) => {
-        axios({ url: '/department/', method: 'GET' })
+        axios({ url: `/department/?offset=${pageOffset}`, method: 'GET' })
           .then(resp => {
             commit('set_departments', resp.data)
             resolve(resp)
@@ -241,9 +246,9 @@ export default new Vuex.Store({
 
     // Category Actions
 
-    get_categories({ commit }) {
+    get_categories({ commit }, pageOffset=0) {
       return new Promise((resolve, reject) => {
-        axios({ url: '/category/', method: 'GET' })
+        axios({ url: `/category/?offset=${pageOffset}`, method: 'GET' })
           .then(resp => {
             commit('set_categories', resp.data)
             resolve(resp)
@@ -292,9 +297,9 @@ export default new Vuex.Store({
 
     // Subcategory Actions
 
-    get_subcategories({ commit }) {
+    get_subcategories({ commit }, pageOffset=0) {
       return new Promise((resolve, reject) => {
-        axios({ url: '/subcategory/', method: 'GET' })
+        axios({ url: `/subcategory/?offset=${pageOffset}`, method: 'GET' })
           .then(resp => {
             commit('set_subcategories', resp.data)
             resolve(resp)
@@ -354,6 +359,32 @@ export default new Vuex.Store({
           })
       });
     },
+
+    //InfoGraph Action
+    get_locations_for_infograph({ commit }) {
+      return new Promise((resolve, reject) => {
+        axios({ url: `/infograph/`, method: 'GET' })
+          .then(resp => {
+            resolve(resp)
+          })
+          .catch(err => {
+            reject(err)
+          })
+      });
+    },
+
+    get_infograph({ commit }, locationID) {
+      return new Promise((resolve, reject) => {
+        axios({ url: `/infograph/${locationID}`, method: 'GET' })
+          .then(resp => {
+            commit("set_infograph", resp.data)
+            resolve(resp)
+          })
+          .catch(err => {
+            reject(err)
+          })
+      });
+    },
   },
   getters: {
     isLoggedIn: state => !!state.token,
@@ -370,7 +401,8 @@ export default new Vuex.Store({
     getSubcategories: state => state.subcategories,
     getCatForSubcat: state => state.catForSubcat,
     getSKUs: state => state.skus,
-    getbreadcrumbItems: state => state.breadcrumbItems
+    getbreadcrumbItems: state => state.breadcrumbItems,
+    getInfoGraphData: state => state.infoGraphData,
   },
   modules: {}
 });

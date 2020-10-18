@@ -1,6 +1,8 @@
 <template>
   <div class="mt-3">
-    <b-alert :variant="alert.variant" :show="alert.show">{{ alert.message }}</b-alert>
+    <b-alert :variant="alert.variant" :show="alert.show">{{
+      alert.message
+    }}</b-alert>
     <div class="float-right pt-3 pb-3">
       <b-button type="button" variant="primary" v-b-modal.location-modal>
         Add location</b-button
@@ -16,7 +18,12 @@
         >
           Edit
         </b-button>
-        <b-button variant="info" size="sm" class="mr-1" @click="row.toggleDetails">
+        <b-button
+          variant="info"
+          size="sm"
+          class="mr-1"
+          @click="row.toggleDetails"
+        >
           {{ row.detailsShowing ? "Hide" : "Show" }} Details
         </b-button>
         <b-button
@@ -38,6 +45,17 @@
         </b-card>
       </template>
     </b-table>
+    <b-pagination
+      v-model="currentPage"
+      :total-rows="totalRows"
+      :per-page="perPage"
+      first-text="First"
+      prev-text="Prev"
+      next-text="Next"
+      last-text="Last"
+      align="right"
+      @input="paginate(currentPage)"
+    ></b-pagination>
     <b-modal
       id="location-modal"
       ref="modal"
@@ -121,6 +139,9 @@ export default {
         "last_modified",
         "actions",
       ],
+      currentPage: 1,
+      totalRows: 10,
+      perPage: null,
     };
   },
   computed: {
@@ -130,7 +151,10 @@ export default {
     }),
   },
   created() {
-    this.get_locations();
+    this.get_locations().then((resp) => {
+      this.totalRows = resp.data.count;
+      this.perPage = resp.data.results.length;
+    });
     this.set_breadcrumb("Locations");
   },
   methods: {
@@ -191,7 +215,7 @@ export default {
       this.newLocation.name = item.name;
       this.newLocation.sku_name = item.sku_name;
       this.newLocation.sku_code = item.sku_code;
-      this.locationModal.titel = `Edit ${item.name}`;
+      this.locationModal.title = `Edit ${item.name}`;
       this.set_location(this.newLocation);
       this.$bvModal.show("location-modal");
     },
@@ -209,16 +233,22 @@ export default {
           centered: true,
         })
         .then((value) => {
-          this.delete_location(item.id).then(() => {
-            console.log("deleted successfully");
-            this.alert.message = "Location deleted successfully";
-            this.alert.variant = "success";
-            this.alert.show = true;
-          });
+          if (value) {
+            this.delete_location(item.id).then(() => {
+              console.log("deleted successfully");
+              this.alert.message = "Location deleted successfully";
+              this.alert.variant = "success";
+              this.alert.show = true;
+            });
+          }
         })
         .catch((err) => {
           // An error occurred
         });
+    },
+    paginate(currentPage) {
+      let offset = (currentPage - 1) * this.perPage;
+      this.get_locations(offset);
     },
   },
 };

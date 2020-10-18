@@ -2,8 +2,14 @@ from rest_framework import serializers
 from locations import models
 
 
+class ISODateField(serializers.DateTimeField):
+    def to_representation(self, value):
+        return value.strftime("%m/%d/%Y, %H:%M:%S")
+
+
 class LocationSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
+    last_modified = ISODateField(read_only=True)
 
     class Meta:
         model = models.Location
@@ -12,7 +18,7 @@ class LocationSerializer(serializers.ModelSerializer):
 
 class DepartmentSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
-    location = serializers.StringRelatedField()
+    last_modified = ISODateField(read_only=True)
 
     class Meta:
         model = models.Department
@@ -21,7 +27,7 @@ class DepartmentSerializer(serializers.ModelSerializer):
 
 class CategorySerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
-    department = serializers.StringRelatedField()
+    last_modified = ISODateField(read_only=True)
 
     class Meta:
         model = models.Category
@@ -30,31 +36,26 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class SubCategorySerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
-    category = serializers.StringRelatedField()
+    last_modified = ISODateField(read_only=True)
 
     class Meta:
         model = models.SubCategory
         fields = ['id', 'name', 'category', 'user', 'last_modified']
 
 
-class InfoGraphSerilizer(serializers.ModelSerializer):
-    location = serializers.SerializerMethodField('get_location')
-    department = serializers.SerializerMethodField('get_dept')
-    category = serializers.SerializerMethodField('get_category')
-    subcategory = serializers.SerializerMethodField('get_subcat')
-
+class CategoryGraphSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.SubCategory
-        fields = ['subcategory', 'category', 'department', 'location']
+        model = models.Category
+        fields = ['subcategory_set', 'name']
 
-    def get_location(self, subcategory):
-        return  subcategory.category.department.location.name
 
-    def get_dept(self, subcategory):
-        return  subcategory.category.department.name
+class DepartmentGraphSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Department
+        fields = ['category_set', 'name']
 
-    def get_category(self, subcategory):
-        return  subcategory.category.name
 
-    def get_subcat(self, subcategory):
-        return  subcategory.name
+class LocationGraphSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Location
+        fields = ['department_set', 'name']

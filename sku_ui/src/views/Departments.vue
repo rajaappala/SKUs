@@ -10,7 +10,7 @@
     </div>
     <b-table striped hover :items="departments" :fields="fields">
       <template v-slot:cell(location)="row">
-        <span>{{ row.item.location }}</span>
+        <span>{{ getName(row.item.location) }}</span>
       </template>
       <template v-slot:cell(actions)="row">
         <b-button
@@ -48,6 +48,17 @@
         </b-card>
       </template>
     </b-table>
+    <b-pagination
+      v-model="currentPage"
+      :total-rows="totalRows"
+      :per-page="perPage"
+      first-text="First"
+      prev-text="Prev"
+      next-text="Next"
+      last-text="Last"
+      align="right"
+      @input="paginate(currentPage)"
+    ></b-pagination>
     <b-modal
       id="department-modal"
       ref="modal"
@@ -108,6 +119,9 @@ export default {
         title: "Add Department",
       },
       fields: ["id", "name", "location", "user", "last_modified", "actions"],
+      currentPage: 1,
+      totalRows: 10,
+      perPage: null,
     };
   },
   computed: {
@@ -118,7 +132,10 @@ export default {
     }),
   },
   created() {
-    this.get_departments();
+    this.get_departments().then((resp) => {
+      this.totalRows = resp.data.count;
+      this.perPage = resp.data.results.departments.length;
+    });
     this.set_breadcrumb("Departments");
   },
   methods: {
@@ -171,14 +188,16 @@ export default {
         });
       }
     },
+    getName(id) {
+      return _.find(this.getLocationsFordepartment, (val) => {
+        if (val.value == id) return val;
+      }).text;
+    },
     editDept(item, index, event) {
       this.newDept.id = item.id;
       this.newDept.name = item.name;
-      debugger;
-      this.newDept.location = _.find(this.getLocationsFordepartment, (val) => {
-        if (val.text == item.location) return val;
-      }).value;
-      this.deptModal.titel = `Edit ${item.name}`;
+      this.newDept.location = item.location;
+      this.deptModal.title = `Edit ${item.name}`;
       this.set_department(this.newDept);
       this.$bvModal.show("department-modal");
     },
@@ -196,15 +215,21 @@ export default {
           centered: true,
         })
         .then((value) => {
-          this.delete_department(item.id).then(() => {
-            this.alert.message = "Department deleted successfully";
-            this.alert.variant = "success";
-            this.alert.show = true;
-          });
+          if (value) {
+            this.delete_department(item.id).then(() => {
+              this.alert.message = "Department deleted successfully";
+              this.alert.variant = "success";
+              this.alert.show = true;
+            });
+          }
         })
         .catch((err) => {
           // An error occurred
         });
+    },
+    paginate(currentPage) {
+      let offset = (currentPage - 1) * this.perPage;
+      this.get_departments(offset);
     },
   },
 };

@@ -45,6 +45,12 @@ const routes = [
         component: () =>
           import(/* webpackChunkName: "skus" */ "../views/SKU.vue")
       },
+      {
+        path: "/infograph",
+        name: "infograph",
+        component: () =>
+          import(/* webpackChunkName: "infograph" */ "../views/InfoGraph.vue")
+      },
     ]
   },
   {
